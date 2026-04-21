@@ -20,9 +20,8 @@ export const Navigation = () => {
         <Input
           type="text"
           onChange={(e) => {
-            console.log(e.target.value);
+            e.target.value;
           }}
-          value=""
           placeholder="Search..."
         />
       </div>
