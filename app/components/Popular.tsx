@@ -1,6 +1,6 @@
 "use client";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import React from "react";
+
 import { Movies } from "../types";
 import axios from "axios";
 type Props = {
@@ -8,19 +8,14 @@ type Props = {
   setTotal: Dispatch<SetStateAction<number>>;
 };
 const API_KEY = "d67d8bebd0f4ff345f6505c99e9d0289";
-export const Upcomingcomps = ({ skip, setTotal }: Props) => {
+export const Popular = ({ skip, setTotal }: Props) => {
   const [movies, setMovies] = useState<Movies[]>([]);
   const [showAll, setShowAll] = useState(false);
-  const [totals, setTotals] = useState({
-    upcoming: 0,
-    popular: 0,
-    topRated: 0,
-  });
   useEffect(() => {
     const page = Math.floor(skip / 20) + 1;
     axios
       .get(
-        `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${page}`,
+        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${page}`,
       )
       .then((res) => {
         setMovies(res.data.results);
@@ -38,7 +33,7 @@ export const Upcomingcomps = ({ skip, setTotal }: Props) => {
           onClick={() => setShowAll(false)}
           className="text-white text-2xl font-bold p-10"
         >
-          Upcomings
+          Popular
         </button>
         {showAll && (
           <button
@@ -71,9 +66,7 @@ export const Upcomingcomps = ({ skip, setTotal }: Props) => {
                h-auto rounded-lg"
               />
             )}
-            <div className="flex flex-col">
-              {movie.title} {movie.release_date}
-            </div>
+            {movie.title}
           </div>
         ))}
       </div>
