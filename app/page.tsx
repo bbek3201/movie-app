@@ -11,6 +11,8 @@ const PRODUCTS_PER_PAGE = 12;
 export default function Home() {
   const [skip, setSkip] = useState(0);
   const [total, setTotal] = useState(0);
+  const [upcomingSkip, setUpcomingSkip] = useState(0);
+  const [upcomingTotal, setUpcomingTotal] = useState(0);
   const handlePrev = () => {
     setSkip((s) => Math.max(0, s - PRODUCTS_PER_PAGE));
   };
@@ -31,9 +33,24 @@ export default function Home() {
         <HeaderUpcoming />
       </div>
       <div className="py-50 w-full h-100 flex flex-col  justify-start gap-4">
-        <Upcomingcomps skip={skip} setTotal={setTotal} />
-        <Popular skip={skip} setTotal={setTotal} />
-        <TopRated skip={skip} setTotal={setTotal} />
+        <Upcomingcomps
+          skip={upcomingSkip}
+          setSkip={setUpcomingSkip}
+          total={upcomingTotal}
+          setTotal={setUpcomingTotal}
+        />
+        <Popular
+          skip={upcomingSkip}
+          setSkip={setUpcomingSkip}
+          total={upcomingTotal}
+          setTotal={setUpcomingTotal}
+        />
+        <TopRated
+          skip={upcomingSkip}
+          setSkip={setUpcomingSkip}
+          total={upcomingTotal}
+          setTotal={setUpcomingTotal}
+        />
         <div className="mt-10 flex items-center justify-center gap-4">
           <button
             onClick={handlePrev}

@@ -18,7 +18,7 @@ export const Input: React.FC<InputProps> = ({
   return (
     <div className="relative ">
       <img
-        src="_magnifying-glass.svg"
+        src="/_magnifying-glass.svg"
         className="absolute left-3 w-6 h-6 top-1"
       />
       <input
