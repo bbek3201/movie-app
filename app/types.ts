@@ -1,4 +1,5 @@
 export type Movies = {
+  slice(arg0: number, arg1: number): unknown;
   genres: any;
   runtime: number;
   adult: boolean;
@@ -51,7 +52,7 @@ export interface CastMember {
 export interface MovieCredits {
   id: number;
   cast: CastMember[];
-  // Хэрэв та Crew (найруулагч, оператор г.м) мэдээллийг татвал энд нэмж болно
+
   crew?: any[];
 }
 export interface MovieResult {
@@ -71,7 +72,6 @@ export interface MovieResult {
   vote_count: number;
 }
 
-// Хэрэв чи API-аас ирдэг бүтэн хариуг (page, results, total_pages) тодорхойлох бол:
 export interface TMDBResponse {
   page: number;
   results: MovieResult[];

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Input } from "./Input";
 import axios from "axios";
 import Link from "next/link";
+import { ChevronRight, Play } from "lucide-react";
 
 const API_KEY = "d67d8bebd0f4ff345f6505c99e9d0289";
 
@@ -43,41 +44,52 @@ export const Navigation = () => {
   }, [searchValue]);
 
   return (
-    <div className="flex w-full h-16 justify-between px-20 items-center relative bg-white dark:bg-black  dark:border-zinc-800">
+    <div className="flex w-full h-16 justify-between px-20 items-center relative bg-white dark:bg-black border-b border-gray-100 dark:border-zinc-800 z-50">
       <Link href={"/"}>
-        <button className="flex gap-2 items-center cursor-pointer">
+        <div className="flex gap-2 items-center cursor-pointer">
           <img className="w-6 h-6" src="/film.svg" alt="Logo" />
           <p className="text-indigo-700 text-[18px] font-bold">Movie Z</p>
-        </button>
+        </div>
       </Link>
 
       <div className="flex gap-4 items-center relative">
         <div className="relative">
           <button
             onClick={() => setIsActive(!isActive)}
-            className="flex gap-2 border border-gray-300 rounded-md px-4 py-2 items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors"
+            className="flex gap-2 border border-gray-300 dark:border-zinc-700 rounded-md px-4 py-2 items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors"
           >
-            <img className="w-4 h-4" src="/chevron-down.svg" alt="" />
+            <img
+              className={`w-4 h-4 transition-transform ${isActive ? "rotate-180" : ""}`}
+              src="/chevron-down.svg"
+              alt=""
+            />
             <p className="font-bold text-sm text-black dark:text-white">
               Genre
             </p>
           </button>
 
           {isActive && (
-            <div className="absolute top-12 left-0 w-80 bg-black border border-gray-200 shadow-2xl rounded-lg p-6 z-50">
+            <div className="absolute top-12 left-0 w-125 bg-black border border-zinc-800 shadow-2xl rounded-lg p-6 z-50">
               <h1 className="text-xl font-bold text-white mb-1">Genres</h1>
               <p className="text-gray-300 text-sm mb-4">
                 See lists of movies by genre
               </p>
-              <hr className="mb-4" />
-              <div className="grid grid-cols-2 gap-3">
+              <hr className="border-zinc-800 mb-4" />
+              <div className="grid grid-cols-3 gap-3">
                 {genres.map((gen) => (
-                  <div
+                  <Link
                     key={gen.id}
-                    className="text-white hover:text-indigo-700 cursor-pointer text-sm font-medium transition-colors"
+                    href={`/genres/${gen.id}?name=${gen.name}`}
+                    onClick={() => setIsActive(false)}
+                    className="group flex items-center justify-between bg-zinc-900 border border-zinc-800 p-2 rounded-full hover:border-indigo-500 hover:bg-zinc-800 transition-all duration-300"
                   >
-                    {gen.name}
-                  </div>
+                    <span className="text-zinc-200 group-hover:text-white font-semibold text-xs truncate">
+                      {gen.name}
+                    </span>
+                    <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-zinc-800 group-hover:bg-indigo-600 transition-colors">
+                      <ChevronRight className="w-3 h-3 text-white opacity-70 group-hover:opacity-100" />
+                    </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -109,20 +121,18 @@ export const Navigation = () => {
                     }
                     alt={movie.title}
                   />
-                  <div className="flex flex-col justify-center">
-                    <span className="font-bold text-sm text-black dark:text-white truncate w-64">
+                  <div className="flex flex-col justify-center flex-1">
+                    <span className="font-bold text-sm text-black dark:text-white line-clamp-1">
                       {movie.original_title}
-                      {movie.vote_average?.toFixed(1)}
                     </span>
-                    <div className="text-right">
-                      <span className="text-yellow-500 font-bold text-xl">
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-500 font-bold text-sm">
                         ★ {movie.vote_average?.toFixed(1)}
                       </span>
-                      <span className="text-gray-400"> / 10</span>
+                      <span className="text-xs text-gray-500">
+                        {movie.release_date?.split("-")[0]}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500">
-                      {movie.release_date}
-                    </span>
                   </div>
                 </Link>
               ))}
@@ -131,7 +141,7 @@ export const Navigation = () => {
         </div>
       </div>
 
-      <button className="border border-gray-300 rounded-md p-2 hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors">
+      <button className="border border-gray-300 dark:border-zinc-700 rounded-md p-2 hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors">
         <img src="/moon.svg" alt="Theme Toggle" className="h-5 w-5" />
       </button>
     </div>

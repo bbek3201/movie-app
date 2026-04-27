@@ -19,39 +19,35 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
   const [movies, setMovies] = useState<Movies[]>([]);
   const [showAll, setShowAll] = useState(false);
 
-  // 1. Дата татах хэсэг
   useEffect(() => {
     const page = Math.floor(skip / MOVIES_PER_PAGE) + 1;
 
     axios
       .get(
-        `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${page}`,
+        `https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&page=${page}`,
       )
       .then((res) => {
         setMovies(res.data.results);
-        // Энд total_pages-ийг авч байгаа бол доор нь дахин 20-д хуваах шаардлагагүй болно
-        setTotal(res.data.total_pages);
+
+        setTotal(Math.min(res.data.total_pages, 500));
       })
-      .catch((err) => console.error("API Error:", err));
+      .catch((err) => console.error("Upcoming API error:", err));
   }, [skip, setTotal]);
 
-  // 2. Функцууд
-  const handleNext = () => {
-    setSkip((prev) => prev + MOVIES_PER_PAGE);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handlePrev = () => {
-    setSkip((prev) => Math.max(0, prev - MOVIES_PER_PAGE));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const visibleMovies = showAll ? movies : movies.slice(0, 10);
+  const currentPage = Math.floor(skip / MOVIES_PER_PAGE) + 1;
+
+  const goToPage = (p: number) => {
+    setSkip((p - 1) * MOVIES_PER_PAGE);
+    window.scrollTo({ top: 800, behavior: "smooth" });
+  };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4">
-      <div className="flex justify-between items-center py-6">
-        <h2 className="text-white text-2xl font-bold">Upcoming</h2>
+    <div className="relative w-full max-w-7xl mx-auto px-4 md:px-10 pt-10">
+      <div className="flex justify-between items-center py-8">
+        <h2 className="text-white text-2xl font-black uppercase tracking-widest">
+          Upcoming
+        </h2>
         <button
           onClick={() => {
             if (showAll) {
@@ -61,69 +57,93 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
               setShowAll(true);
             }
           }}
-          className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
+          className="text-indigo-500 hover:text-indigo-400 font-bold transition-colors uppercase text-sm tracking-widest"
         >
-          {showAll ? "Back" : "See more"}
+          {showAll ? "❮ Back" : "See more ❯"}
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 place-items-center">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10">
         {visibleMovies.map((movie) => (
           <Link
             key={movie.id}
-            href={`movie/${movie.id}`}
-            className="group w-full max-w-[230px] flex flex-col items-center text-center"
+            href={`/movie/${movie.id}`}
+            className="group flex flex-col space-y-3"
           >
-            <div className="relative w-full aspect-[2/3] overflow-hidden rounded-xl shadow-lg bg-zinc-900">
+            <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-xl bg-zinc-900 border border-zinc-800/50">
               {movie.poster_path ? (
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   alt={movie.title}
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
+                <div className="w-full h-full flex items-center justify-center text-zinc-600 font-bold uppercase text-xs">
                   No Image
                 </div>
               )}
             </div>
 
-            <div className="mt-3 w-full">
-              <p className="text-yellow-400 font-bold text-lg">
-                ★ {movie.vote_average?.toFixed(1)}
-              </p>
-              <p className="text-white font-bold text-lg line-clamp-1 group-hover:text-indigo-400 transition-colors">
+            <div className="space-y-1">
+              <h3 className="text-white font-bold text-base line-clamp-1 group-hover:text-indigo-500 transition-colors">
                 {movie.title}
-              </p>
-              <p className="text-sm text-gray-400">
-                {movie.release_date?.split("-")[0]}
-              </p>
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-yellow-500 font-black text-sm">
+                  ★ {movie.vote_average?.toFixed(1)}
+                </span>
+                <span className="text-zinc-500 font-bold text-xs">
+                  {movie.release_date?.split("-")[0]}
+                </span>
+              </div>
             </div>
           </Link>
         ))}
       </div>
 
       {showAll && (
-        <div className="mt-12 flex items-center justify-center gap-6 pb-10">
+        <div className="mt-14 flex items-center justify-center gap-6 pb-20 select-none">
           <button
-            onClick={handlePrev}
-            disabled={skip === 0}
-            className="rounded-lg border border-zinc-700 bg-zinc-900 px-5 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 disabled:opacity-30 transition-all"
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="flex items-center gap-2 text-sm font-bold text-white transition-all hover:opacity-70 disabled:opacity-20 disabled:cursor-not-allowed"
           >
-            &larr; Өмнөх
+            <span className="text-xl">‹</span> Previous
           </button>
 
-          <span className="text-sm text-zinc-400 font-bold">
-            {/* Одоогийн хуудас / Нийт хуудас */}
-            {Math.floor(skip / MOVIES_PER_PAGE) + 1} / {total}
-          </span>
+          <div className="flex items-center gap-2">
+            {[1, 2, 3].map((p) => (
+              <button
+                key={p}
+                onClick={() => goToPage(p)}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-sm font-bold transition-all ${
+                  currentPage === p
+                    ? "border border-zinc-700 bg-zinc-900 text-white shadow-lg"
+                    : "text-zinc-500 hover:bg-zinc-800 hover:text-white"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+            <span className="px-2 text-zinc-600 font-bold">...</span>
+            <button
+              onClick={() => goToPage(total)}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold transition-all ${
+                currentPage === total
+                  ? "border border-zinc-700 bg-zinc-900 text-white"
+                  : "text-zinc-500 hover:bg-zinc-800"
+              }`}
+            >
+              {total}
+            </button>
+          </div>
 
           <button
-            onClick={handleNext}
-            disabled={Math.floor(skip / MOVIES_PER_PAGE) + 1 >= total}
-            className="rounded-lg border border-zinc-700 bg-zinc-900 px-5 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 disabled:opacity-30 transition-all"
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === total}
+            className="flex items-center gap-2 text-sm font-bold text-white transition-all hover:opacity-70 disabled:opacity-20 disabled:cursor-not-allowed"
           >
-            Дараах &rarr;
+            Next <span className="text-xl">›</span>
           </button>
         </div>
       )}

@@ -1,24 +1,32 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Movies, TrailerResult } from "../types";
+import { Movies } from "../types";
 import axios from "axios";
+import Link from "next/link";
 
 const API_KEY = "d67d8bebd0f4ff345f6505c99e9d0289";
+const AUTO_SLIDE_INTERVAL = 2000;
 
 export const HeaderUpcoming = () => {
   const [movies, setMovies] = useState<Movies[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
-  const [player, setPlayer] = useState<boolean>(false); // Default-оор хаалттай байна
+  const [player, setPlayer] = useState<boolean>(false);
 
   useEffect(() => {
     axios
       .get(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}`)
       .then((res) => {
-        setMovies(res.data.results);
+        setMovies(res.data.results.slice(0, 5));
       })
       .catch((err) => console.error("Movies fetch error:", err));
   }, []);
+
+  useEffect(() => {
+    if (player || movies.length === 0) return;
+    const interval = setInterval(() => nextSlide(), AUTO_SLIDE_INTERVAL);
+    return () => clearInterval(interval);
+  }, [currentIndex, player, movies]);
 
   useEffect(() => {
     if (movies.length > 0) {
@@ -27,13 +35,16 @@ export const HeaderUpcoming = () => {
           `https://api.themoviedb.org/3/movie/${movies[currentIndex].id}/videos?api_key=${API_KEY}`,
         )
         .then((res) => {
-          setTrailerKey(res.data.results[1]?.key);
+          const trailer = res.data.results.find(
+            (v: any) => v.type === "Trailer",
+          );
+          setTrailerKey(trailer?.key || res.data.results[0]?.key);
         });
     }
   }, [currentIndex, movies]);
 
   const nextSlide = () => {
-    setPlayer(false); // Слайд солигдоход видеог хаана
+    setPlayer(false);
     setCurrentIndex((prev) => (prev === movies.length - 1 ? 0 : prev + 1));
   };
 
@@ -48,48 +59,57 @@ export const HeaderUpcoming = () => {
   const currentMovie = movies[currentIndex];
 
   return (
-    <div className="relative w-full h-200 overflow-hidden group">
-      {/* Background Image */}
-      <div
-        className="w-full h-full bg-cover bg-center transition-all duration-700 ease-in-out"
-        style={{
-          backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie.backdrop_path})`,
-        }}
-      >
-        <div className="absolute inset-0 bg-black/50" />
+    <div className="relative w-full h-150 md:h-200 overflow-hidden group">
+      <Link href={`/movie/${currentMovie.id}`} className="absolute inset-0 z-0">
+        <div
+          className="w-full h-full bg-cover bg-center transition-all duration-1000 ease-in-out scale-105 group-hover:scale-100"
+          style={{
+            backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie.backdrop_path})`,
+          }}
+        >
+          <div className="absolute inset-0 bg-linear-to-r from-black via-black/40 to-transparent" />
+        </div>
+      </Link>
 
-        <div className="absolute inset-0 flex flex-col justify-center px-20 space-y-6">
-          <p className="text-white text-sm font-semibold uppercase tracking-widest">
-            Upcoming
+      <div className="absolute inset-0 pointer-events-none flex flex-col justify-center px-10 md:px-20 space-y-6">
+        <div className="pointer-events-auto space-y-6">
+          <p className="text-indigo-500 text-sm font-black uppercase tracking-[0.3em]">
+            Now playing
           </p>
-          <h1 className="text-6xl font-bold text-white max-w-2xl leading-tight">
-            {currentMovie.title}
-          </h1>
-          <p className="text-gray-200 text-lg max-w-xl line-clamp-3">
+
+          <Link href={`/movie/${currentMovie.id}`}>
+            <h1 className="text-4xl md:text-7xl font-black text-white max-w-3xl leading-tight hover:text-indigo-400 transition-colors cursor-pointer">
+              {currentMovie.title}
+            </h1>
+          </Link>
+
+          <p className="text-gray-300 text-base md:text-lg max-w-xl line-clamp-3 font-medium">
             {currentMovie.overview}
           </p>
 
           <button
-            onClick={() => setPlayer(true)}
-            className="flex items-center gap-2 border-2 border-white text-white hover:bg-white hover:text-black px-8 py-3 rounded-full font-bold transition-all w-fit uppercase text-sm tracking-widest active:scale-95"
+            onClick={(e) => {
+              e.preventDefault();
+              setPlayer(true);
+            }}
+            className="flex items-center gap-3 border-2 border-white text-white hover:bg-white hover:text-black px-10 py-4 rounded-full font-black transition-all w-fit uppercase text-xs tracking-widest active:scale-95"
           >
             Watch Trailer
           </button>
         </div>
       </div>
 
-      {/* Video Player Modal */}
       {player && trailerKey && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/90 p-10">
-          <div className="relative w-full max-w-5xl aspect-video shadow-2xl">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/95 p-4 md:p-10 backdrop-blur-sm">
+          <div className="relative w-full max-w-6xl aspect-video shadow-2xl">
             <button
               onClick={() => setPlayer(false)}
-              className="absolute -top-12 right-0 text-white flex items-center gap-2 hover:text-gray-300 transition-colors"
+              className="absolute -top-14 right-0 text-white flex items-center gap-2 hover:text-indigo-400 transition-colors font-bold uppercase text-sm tracking-widest"
             >
-              Close <span className="text-2xl font-bold">×</span>
+              Close <span className="text-3xl">&times;</span>
             </button>
             <iframe
-              className="w-full h-full rounded-xl"
+              className="w-full h-full rounded-2xl"
               src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
               title="YouTube video player"
               allow="autoplay; encrypted-media"
@@ -99,28 +119,27 @@ export const HeaderUpcoming = () => {
         </div>
       )}
 
-      {/* Controls */}
       <button
         onClick={prevSlide}
-        className="absolute left-8 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 p-4 rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
+        className="absolute left-8 top-1/2 -translate-y-1/2 z-20 bg-black/20 hover:bg-indigo-600 p-4 rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
       >
-        <img src="/left.svg" alt="prev" className="w-6 h-6 invert" />
+        <span className="text-white text-2xl">‹</span>
       </button>
 
       <button
         onClick={nextSlide}
-        className="absolute right-8 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 p-4 rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
+        className="absolute right-8 top-1/2 -translate-y-1/2 z-20 bg-black/20 hover:bg-indigo-600 p-4 rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
       >
-        <img src="/chevron-right.svg" alt="next" className="w-6 h-6 invert" />
+        <span className="text-white text-2xl">›</span>
       </button>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3">
-        {movies.slice(0, 10).map((_, index) => (
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+        {movies.map((_, index) => (
           <div
             key={index}
             onClick={() => setCurrentIndex(index)}
-            className={`h-2 cursor-pointer rounded-full transition-all duration-500 ${
-              index === currentIndex ? "w-10 bg-indigo-600" : "w-2 bg-white/50"
+            className={`h-1.5 cursor-pointer rounded-full transition-all duration-700 ${
+              index === currentIndex ? "w-12 bg-indigo-600" : "w-3 bg-white/30"
             }`}
           />
         ))}
