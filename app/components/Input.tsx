@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 
 interface InputProps {
   type?: string;
@@ -16,13 +16,19 @@ export const Input: React.FC<InputProps> = ({
   placeholder,
 }) => {
   return (
-    <div className="relative text-white">
+    <div className="relative">
       <img
         src="/_magnifying-glass.svg"
         className="absolute left-3 w-6 h-6 top-1"
       />
       <input
-        className="w-94.75 h-9 rounded-sm px-2 border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10"
+        className="w-94.75 h-9 rounded-sm px-2
+          border border-gray-300 dark:border-gray-500
+          bg-white dark:bg-zinc-900
+          text-black dark:text-white
+          placeholder:text-gray-400 dark:placeholder:text-gray-500
+          focus:outline-none focus:ring-2 focus:ring-blue-500
+          pl-10 transition-colors"
         type={type}
         onChange={onChange}
         value={value}

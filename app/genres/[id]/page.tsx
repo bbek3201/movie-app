@@ -68,9 +68,7 @@ export default function GenreSearchPage() {
   };
 
   return (
-    <div className="bg-black min-h-screen w-full font-sans text-white">
-      <Navigation />
-
+    <div className=" min-h-screen w-full font-sans text-white">
       <main className="container mx-auto px-6 py-12">
         <header className="mb-12">
           <h1 className="text-4xl font-black tracking-tight uppercase mb-2">
@@ -179,7 +177,7 @@ export default function GenreSearchPage() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2   disabled:cursor-not-allowed "
+                className="px-4 py-2  disabled:opacity-40 disabled:cursor-not-allowed "
               >
                 Previous
               </button>

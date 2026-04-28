@@ -78,3 +78,14 @@ export interface TMDBResponse {
   total_pages: number;
   total_results: number;
 }
+export interface Genre {
+  id: number;
+  name: string;
+}
+
+export interface Movie {
+  id: number;
+  title: string;
+  poster_path: string;
+  vote_average: number;
+}
