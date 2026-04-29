@@ -87,6 +87,27 @@ export default function MovieDetails({ params }: { params: any }) {
     setShowAll(false);
   }, [params]);
 
+  // ✅ Trailer нээлттэй үед scroll блоклох
+  useEffect(() => {
+    if (playerOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [playerOpen]);
+
+  // ✅ Escape товчоор хаах
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPlayerOpen(false);
+    };
+    if (playerOpen) document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [playerOpen]);
+
   if (loading)
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white">
@@ -103,6 +124,7 @@ export default function MovieDetails({ params }: { params: any }) {
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors">
       <main className="p-6 md:p-10 max-w-7xl mx-auto space-y-16">
+        {/* ГАРЧИГ */}
         <div className="flex justify-between items-end border-b border-gray-100 dark:border-zinc-800 pb-6">
           <div>
             <h1 className="text-3xl md:text-5xl font-black mb-3">
@@ -123,15 +145,24 @@ export default function MovieDetails({ params }: { params: any }) {
           </div>
         </div>
 
+        {/* TRAILER ТОВЧ */}
         <div
           onClick={() => setPlayerOpen(true)}
           className="flex items-center gap-2 cursor-pointer hover:text-indigo-500 transition-colors w-fit font-bold uppercase tracking-wider"
         >
           Trailer <Play size={20} fill="currentColor" />
         </div>
+
+        {/* TRAILER MODAL */}
         {playerOpen && trailerKey && (
-          <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
-            <div className="relative w-full max-w-5xl aspect-video">
+          <div
+            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
+            onClick={() => setPlayerOpen(false)}
+          >
+            <div
+              className="relative w-full max-w-5xl aspect-video"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 onClick={() => setPlayerOpen(false)}
                 className="absolute -top-12 right-0 text-white flex items-center gap-2 hover:text-indigo-400 font-bold uppercase text-sm"
@@ -143,11 +174,12 @@ export default function MovieDetails({ params }: { params: any }) {
                 src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
                 allow="autoplay; encrypted-media"
                 allowFullScreen
-              ></iframe>
+              />
             </div>
           </div>
         )}
 
+        {/* BACKDROP + POSTER */}
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="lg:w-2/3 aspect-video">
             <img
@@ -156,7 +188,7 @@ export default function MovieDetails({ params }: { params: any }) {
               alt="backdrop"
             />
           </div>
-          <div className="lg:w-1/3 hidden lg:block aspect-2/3">
+          <div className="lg:w-1/3 hidden lg:block aspect-[2/3]">
             <img
               src={`https://image.tmdb.org/t/p/original${movie.poster_path}`}
               className="rounded-3xl w-full h-full object-cover shadow-2xl"
@@ -165,7 +197,74 @@ export default function MovieDetails({ params }: { params: any }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
+        {/* ✅ CAST */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-black uppercase">Cast</h2>
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            {cast.slice(0, 10).map((member) => (
+              <div key={member.id} className="min-w-[100px] text-center group">
+                <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-2 bg-zinc-800 border-2 border-zinc-700 group-hover:border-indigo-500 transition-colors">
+                  {member.profile_path ? (
+                    <img
+                      src={`https://image.tmdb.org/t/p/w185${member.profile_path}`}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-zinc-500 text-2xl">
+                      ?
+                    </div>
+                  )}
+                </div>
+                <p className="font-bold text-xs line-clamp-1">{member.name}</p>
+                <p className="text-zinc-500 text-[11px] line-clamp-1">
+                  {member.character}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ✅ CREW */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-black uppercase">Crew</h2>
+          <div className="flex flex-wrap gap-3">
+            {crew
+              .filter((c) =>
+                ["Director", "Screenplay", "Writer", "Story"].includes(c.job),
+              )
+              .slice(0, 8)
+              .map((member, i) => (
+                <div
+                  key={`${member.id}-${i}`}
+                  className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3"
+                >
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                    {member.profile_path ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w185${member.profile_path}`}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-zinc-500">
+                        ?
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm">{member.name}</p>
+                    <p className="text-indigo-500 text-xs font-semibold">
+                      {member.job}
+                    </p>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* WATCH MOVIE */}
+        <div className="space-y-6">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             Watch Movie <Play size={20} />
           </h2>
@@ -176,10 +275,11 @@ export default function MovieDetails({ params }: { params: any }) {
               height="100%"
               allowFullScreen
               className="w-full h-full"
-            ></iframe>
+            />
           </div>
         </div>
 
+        {/* MORE LIKE THIS */}
         <div className="space-y-8 pt-10 border-t border-zinc-800">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl uppercase font-black">More Like This</h2>
@@ -197,9 +297,9 @@ export default function MovieDetails({ params }: { params: any }) {
                 <Link
                   key={m.id}
                   href={`/movie/${m.id}`}
-                  className="min-w-50 md:min-w-55 group snap-start"
+                  className="min-w-[200px] md:min-w-[220px] group snap-start"
                 >
-                  <div className="relative overflow-hidden rounded-2xl aspect-2/3 mb-4 shadow-lg bg-zinc-900">
+                  <div className="relative overflow-hidden rounded-2xl aspect-[2/3] mb-4 shadow-lg bg-zinc-900">
                     <img
                       src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
                       alt={m.title}
@@ -219,7 +319,7 @@ export default function MovieDetails({ params }: { params: any }) {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 animate-in fade-in duration-500">
               {similarMovies.map((m) => (
                 <Link key={m.id} href={`/movie/${m.id}`} className="group">
-                  <div className="relative overflow-hidden rounded-2xl aspect-2/3 mb-4 shadow-xl bg-zinc-900 border border-zinc-800/50">
+                  <div className="relative overflow-hidden rounded-2xl aspect-[2/3] mb-4 shadow-xl bg-zinc-900 border border-zinc-800/50">
                     <img
                       src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
                       alt={m.title}

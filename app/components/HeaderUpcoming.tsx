@@ -16,9 +16,7 @@ export const HeaderUpcoming = () => {
   useEffect(() => {
     axios
       .get(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}`)
-      .then((res) => {
-        setMovies(res.data.results.slice(0, 5));
-      })
+      .then((res) => setMovies(res.data.results.slice(0, 5)))
       .catch((err) => console.error("Movies fetch error:", err));
   }, []);
 
@@ -43,6 +41,27 @@ export const HeaderUpcoming = () => {
     }
   }, [currentIndex, movies]);
 
+  // ✅ Escape товчоор хаах
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPlayer(false);
+    };
+    if (player) document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [player]);
+
+  // ✅ Trailer нээлттэй үед scroll блоклох
+  useEffect(() => {
+    if (player) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [player]);
+
   const nextSlide = () => {
     setPlayer(false);
     setCurrentIndex((prev) => (prev === movies.length - 1 ? 0 : prev + 1));
@@ -54,7 +73,9 @@ export const HeaderUpcoming = () => {
   };
 
   if (movies.length === 0)
-    return <div className="h-150 w-full bg-zinc-900 animate-pulse" />;
+    return (
+      <div className="h-150 md:h-200 w-full bg-zinc-200 dark:bg-zinc-900 animate-pulse" />
+    );
 
   const currentMovie = movies[currentIndex];
 
@@ -67,23 +88,23 @@ export const HeaderUpcoming = () => {
             backgroundImage: `url(https://image.tmdb.org/t/p/original${currentMovie.backdrop_path})`,
           }}
         >
-          <div className="absolute inset-0 bg-linear-to-r from-black via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/30 to-transparent dark:from-black/90 dark:via-black/50 dark:to-transparent" />
         </div>
       </Link>
 
       <div className="absolute inset-0 pointer-events-none flex flex-col justify-center px-10 md:px-20 space-y-6">
         <div className="pointer-events-auto space-y-6">
-          <p className="text-indigo-500 text-sm font-black uppercase tracking-[0.3em]">
+          <p className="text-white dark:text-white text-sm font-black uppercase">
             Now playing
           </p>
 
           <Link href={`/movie/${currentMovie.id}`}>
-            <h1 className="text-4xl md:text-7xl font-black text-white max-w-3xl leading-tight hover:text-indigo-400 transition-colors cursor-pointer">
+            <h1 className="text-4xl md:text-7xl font-black text-white max-w-3xl leading-tight hover:text-indigo-400 transition-colors cursor-pointer drop-shadow-lg">
               {currentMovie.title}
             </h1>
           </Link>
 
-          <p className="text-gray-300 text-base md:text-lg max-w-xl line-clamp-3 font-medium">
+          <p className="text-gray-200 dark:text-gray-300 text-base md:text-lg max-w-xl line-clamp-3 font-medium drop-shadow-md">
             {currentMovie.overview}
           </p>
 
@@ -99,9 +120,16 @@ export const HeaderUpcoming = () => {
         </div>
       </div>
 
+      {/* ✅ z-[999] болгосон, scroll блоклосон */}
       {player && trailerKey && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/95 p-4 md:p-10 backdrop-blur-sm">
-          <div className="relative w-full max-w-6xl aspect-video shadow-2xl">
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 dark:bg-black/95 p-4 md:p-10 backdrop-blur-sm"
+          onClick={() => setPlayer(false)}
+        >
+          <div
+            className="relative w-full max-w-6xl aspect-video shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setPlayer(false)}
               className="absolute -top-14 right-0 text-white flex items-center gap-2 hover:text-indigo-400 transition-colors font-bold uppercase text-sm tracking-widest"
@@ -114,7 +142,7 @@ export const HeaderUpcoming = () => {
               title="YouTube video player"
               allow="autoplay; encrypted-media"
               allowFullScreen
-            ></iframe>
+            />
           </div>
         </div>
       )}
@@ -139,7 +167,9 @@ export const HeaderUpcoming = () => {
             key={index}
             onClick={() => setCurrentIndex(index)}
             className={`h-1.5 cursor-pointer rounded-full transition-all duration-700 ${
-              index === currentIndex ? "w-12 bg-indigo-600" : "w-3 bg-white/30"
+              index === currentIndex
+                ? "w-12 bg-indigo-500"
+                : "w-3 bg-white/40 dark:bg-white/30"
             }`}
           />
         ))}

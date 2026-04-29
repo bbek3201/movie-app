@@ -4,6 +4,7 @@ import React from "react";
 import { Movies } from "../types";
 import axios from "axios";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 
 type Props = {
   skip: number;
@@ -18,6 +19,11 @@ const MOVIES_PER_PAGE = 20;
 export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
   const [movies, setMovies] = useState<Movies[]>([]);
   const [showAll, setShowAll] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const page = Math.floor(skip / MOVIES_PER_PAGE) + 1;
@@ -32,9 +38,10 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
       .catch((err) => console.error("Upcoming API error:", err));
   }, [skip, setTotal]);
 
+  if (!mounted) return null;
+
   const currentPage = Math.floor(skip / MOVIES_PER_PAGE) + 1;
 
-  // Буцаах (See less) функц
   const handleBack = () => {
     setSkip(0);
     setShowAll(false);
@@ -57,12 +64,11 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
 
   return (
     <div
-      className="relative w-full max-w-10xl mx-auto px-4 md:px-10 pt-10"
-      // ShowAll үед контейнер дээр дарахад хаагдана
+      className="relative w-full max-w-10xl mx-auto px-4 md:px-10 pt-10 transition-colors duration-300"
       onClick={() => showAll && handleBack()}
     >
       <div className="flex justify-between items-center py-8">
-        <h2 className="text-black dark:text-white text-2xl font-black uppercase tracking-widest">
+        <h2 className="text-zinc-900 dark:text-zinc-50 text-2xl font-black uppercase tracking-widest">
           Upcoming
         </h2>
         <button
@@ -71,36 +77,40 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
             if (showAll) handleBack();
             else setShowAll(true);
           }}
-          className="z-10 text-indigo-500 hover:text-indigo-400 font-bold transition-colors uppercase text-sm tracking-widest"
+          className="z-10 text-indigo-600 dark:text-indigo-400 font-bold transition-all uppercase text-sm tracking-widest"
         >
           {showAll ? "❮ Back" : "See more ❯"}
         </button>
       </div>
 
       {!showAll ? (
-        /* 2 ЭГНЭЭГЭЭР ГҮЙДЭГ ХЭСЭГ */
-        <div className="grid grid-rows-2 grid-flow-col gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory overflow-y-hidden">
+        <div className="grid grid-rows-2 grid-flow-col gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
           {movies.map((movie) => (
             <Link
               key={movie.id}
               href={`/movie/${movie.id}`}
-              className="w-[160px] sm:w-[180px] md:w-[200px] group snap-start flex flex-col space-y-2"
+              className="w-40 sm:w-45 md:w-50 group snap-start flex flex-col space-y-2"
             >
-              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-lg bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50">
+              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   alt={movie.title}
                   className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                 />
               </div>
-              <h3 className="text-black dark:text-white font-bold text-xs line-clamp-1 group-hover:text-indigo-500 transition-colors">
-                {movie.title}
-              </h3>
+              <div className="space-y-0.5">
+                <h3 className="text-zinc-900 dark:text-zinc-50 font-bold text-xs line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {movie.title}
+                </h3>
+                {/* Энд одтой үнэлгээг буцааж нэмлээ */}
+                <p className="text-yellow-500 font-bold text-[10px]">
+                  ★ {movie.vote_average?.toFixed(1)}
+                </p>
+              </div>
             </Link>
           ))}
         </div>
       ) : (
-        /* SEE MORE ДАРСАН ҮЕД */
         <div
           className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10 animate-in fade-in duration-500"
           onClick={(e) => e.stopPropagation()}
@@ -112,19 +122,26 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
               onClick={(e) => e.stopPropagation()}
               className="group flex flex-col space-y-3"
             >
-              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-xl bg-gray-100 dark:bg-zinc-900 border border-zinc-800/50">
+              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   alt={movie.title}
                 />
               </div>
-              <h3 className="text-black dark:text-white font-bold text-base line-clamp-1 group-hover:text-indigo-500">
-                {movie.title}
-              </h3>
-              <p className="text-yellow-500 font-bold text-sm">
-                ★ {movie.vote_average?.toFixed(1)}
-              </p>
+              <div className="space-y-1">
+                <h3 className="text-zinc-900 dark:text-zinc-50 font-bold text-base line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {movie.title}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-yellow-500 font-black text-sm">
+                    ★ {movie.vote_average?.toFixed(1)}
+                  </span>
+                  <span className="text-zinc-500 dark:text-zinc-400 font-bold text-xs">
+                    {movie.release_date?.split("-")[0] || "N/A"}
+                  </span>
+                </div>
+              </div>
             </Link>
           ))}
         </div>
@@ -138,7 +155,7 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-2 font-bold disabled:opacity-20 text-black dark:text-white"
+            className="px-3 py-2 font-bold text-zinc-900 dark:text-zinc-50 hover:text-indigo-600 disabled:opacity-20 transition-all"
           >
             ‹ Prev
           </button>
@@ -147,7 +164,11 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
               <button
                 key={p}
                 onClick={() => goToPage(p)}
-                className={`h-10 w-10 rounded-xl font-bold transition-all ${currentPage === p ? "bg-indigo-600 text-white shadow-lg" : "text-gray-500 border border-gray-200 dark:border-zinc-800"}`}
+                className={`h-10 w-10 rounded-xl font-bold transition-all ${
+                  currentPage === p
+                    ? "bg-indigo-600 text-white shadow-lg"
+                    : "text-zinc-500 border border-zinc-200 dark:border-zinc-700 hover:border-indigo-500 hover:text-indigo-500"
+                }`}
               >
                 {p}
               </button>
@@ -156,22 +177,12 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={currentPage === total}
-            className="px-3 py-2 font-bold disabled:opacity-20 text-black dark:text-white"
+            className="px-3 py-2 font-bold text-zinc-900 dark:text-zinc-50 hover:text-indigo-600 disabled:opacity-20 transition-all"
           >
             Next ›
           </button>
         </div>
       )}
-
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 };

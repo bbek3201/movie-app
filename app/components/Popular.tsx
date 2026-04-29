@@ -1,9 +1,11 @@
 "use client";
+
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import React from "react";
 import { Movies } from "../types";
 import axios from "axios";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 
 type Props = {
   skip: number;
@@ -18,6 +20,11 @@ const MOVIES_PER_PAGE = 20;
 export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
   const [movies, setMovies] = useState<Movies[]>([]);
   const [showAll, setShowAll] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const page = Math.floor(skip / MOVIES_PER_PAGE) + 1;
@@ -31,6 +38,8 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
       })
       .catch((err) => console.error("Popular API error:", err));
   }, [skip, setTotal]);
+
+  if (!mounted) return null;
 
   const currentPage = Math.floor(skip / MOVIES_PER_PAGE) + 1;
 
@@ -56,36 +65,34 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
 
   return (
     <div
-      className="relative w-full max-w-7xl mx-auto px-4 md:px-10"
-      // Хэрэв showAll идэвхтэй бол хоосон зай дээр дарахад хаагдана
+      className="w-full max-w-7xl mx-auto px-4 md:px-10 transition-colors duration-300"
       onClick={() => showAll && handleBack()}
     >
       <div className="flex justify-between items-center py-8">
-        <h2 className="text-black dark:text-white text-2xl font-black uppercase tracking-widest">
+        <h2 className="text-zinc-900 dark:text-zinc-50 text-2xl font-black uppercase tracking-widest">
           Popular
         </h2>
         <button
           onClick={(e) => {
-            e.stopPropagation(); // Контейнерийн onClick-ийг ажиллуулахгүй байх
+            e.stopPropagation();
             if (showAll) handleBack();
             else setShowAll(true);
           }}
-          className="z-10 text-indigo-500 hover:text-indigo-400 font-bold transition-colors uppercase text-sm tracking-widest"
+          className="z-10 text-indigo-600 dark:text-indigo-400 hover:opacity-80 font-bold transition-all uppercase text-sm tracking-widest"
         >
           {showAll ? "❮ Back" : "See more ❯"}
         </button>
       </div>
 
       {!showAll ? (
-        <div className="grid grid-rows-2 grid-flow-col gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory overflow-y-hidden">
+        <div className="grid grid-rows-2 grid-flow-col gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
           {movies.map((movie) => (
             <Link
               key={movie.id}
               href={`/movie/${movie.id}`}
-              className="w-[160px] sm:w-[180px] md:w-[200px] group snap-start flex flex-col space-y-2"
+              className="w-40 sm:w-45 md:w-50 group snap-start flex flex-col space-y-2"
             >
-              {/* Киноны карт дээр дарахад handleBack ажиллахгүй байх хэрэгтэй */}
-              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-lg bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50">
+              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   alt={movie.title}
@@ -93,7 +100,7 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
                 />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-black dark:text-white font-bold text-xs line-clamp-1 group-hover:text-indigo-500 transition-colors">
+                <h3 className="text-zinc-900 dark:text-zinc-50 font-bold text-xs line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {movie.title}
                 </h3>
                 <p className="text-yellow-500 font-bold text-[10px]">
@@ -106,16 +113,16 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
       ) : (
         <div
           className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10 animate-in fade-in duration-500"
-          onClick={(e) => e.stopPropagation()} // Карт хоорондын зай дээр дарахад хаагдахгүй байх (хэрэв хүсвэл энийг устгаж болно)
+          onClick={(e) => e.stopPropagation()}
         >
           {movies.map((movie) => (
             <Link
               key={movie.id}
               href={`/movie/${movie.id}`}
-              onClick={(e) => e.stopPropagation()} // Кино руу орох үед хаагдахгүй байх
+              onClick={(e) => e.stopPropagation()}
               className="group flex flex-col space-y-3"
             >
-              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-xl bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50">
+              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   alt={movie.title}
@@ -123,14 +130,14 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
                 />
               </div>
               <div className="space-y-1">
-                <h3 className="text-black dark:text-white font-bold text-base line-clamp-1 group-hover:text-indigo-500 transition-colors">
+                <h3 className="text-zinc-900 dark:text-zinc-50 font-bold text-base line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {movie.title}
                 </h3>
                 <div className="flex items-center gap-2">
                   <span className="text-yellow-500 font-black text-sm">
                     ★ {movie.vote_average?.toFixed(1)}
                   </span>
-                  <span className="text-gray-400 dark:text-zinc-500 font-bold text-xs">
+                  <span className="text-zinc-500 dark:text-zinc-400 font-bold text-xs">
                     {movie.release_date?.split("-")[0] || "N/A"}
                   </span>
                 </div>
@@ -143,75 +150,52 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
       {showAll && (
         <div
           className="mt-14 flex items-center justify-center gap-2 md:gap-4 pb-20 select-none"
-          onClick={(e) => e.stopPropagation()} // Pagination хэсэг дээр дарахад хаагдахгүй байх
+          onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-2 text-sm font-bold text-black dark:text-white hover:opacity-70 disabled:opacity-20"
+            className="px-3 py-2 text-sm font-bold text-zinc-900 dark:text-zinc-50 hover:text-indigo-600 disabled:opacity-20 transition-all"
           >
             ‹ Prev
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-50">
             {currentPage > 3 && (
               <>
                 <button
                   onClick={() => goToPage(1)}
-                  className="h-10 w-10 text-gray-400 font-bold hover:text-black dark:hover:text-white"
+                  className="h-10 w-10 font-bold"
                 >
                   1
                 </button>
-                <span className="text-gray-400 dark:text-zinc-600">...</span>
+                <span className="text-zinc-400">...</span>
               </>
             )}
-
             {getPageNumbers().map((p) => (
               <button
                 key={p}
                 onClick={() => goToPage(p)}
                 className={`h-10 w-10 rounded-xl text-sm font-bold transition-all ${
                   currentPage === p
-                    ? "bg-indigo-600 text-white shadow-lg scale-110"
-                    : "border border-gray-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:border-indigo-500 hover:text-indigo-500"
+                    ? "bg-indigo-600 text-white shadow-lg"
+                    : "border border-zinc-200 dark:border-zinc-700 hover:text-indigo-500"
                 }`}
               >
                 {p}
               </button>
             ))}
-
-            {currentPage < total - 2 && (
-              <>
-                <span className="text-gray-400 dark:text-zinc-600">...</span>
-                <button
-                  onClick={() => goToPage(total)}
-                  className="h-10 w-10 text-gray-400 font-bold hover:text-black dark:hover:text-white"
-                >
-                  {total}
-                </button>
-              </>
-            )}
           </div>
 
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={currentPage === total}
-            className="px-3 py-2 text-sm font-bold text-black dark:text-white hover:opacity-70 disabled:opacity-20"
+            className="px-3 py-2 text-sm font-bold text-zinc-900 dark:text-zinc-50 hover:text-indigo-600 disabled:opacity-20 transition-all"
           >
             Next ›
           </button>
         </div>
       )}
-
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 };
