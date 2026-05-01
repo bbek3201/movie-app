@@ -72,7 +72,8 @@ export const TopRated = ({ skip, setSkip, setTotal, total }: Props) => {
         <h2 className="text-zinc-900 dark:text-zinc-50 text-2xl font-black uppercase tracking-widest">
           Top Rated
         </h2>
-        <button
+        <Link
+          href={"/toprated"}
           onClick={(e) => {
             e.stopPropagation();
             if (showAll) handleBack();
@@ -81,7 +82,7 @@ export const TopRated = ({ skip, setSkip, setTotal, total }: Props) => {
           className="z-10 text-indigo-600 dark:text-indigo-400 hover:opacity-80 font-bold transition-all uppercase text-sm tracking-widest"
         >
           {showAll ? "❮ Back" : "See more ❯"}
-        </button>
+        </Link>
       </div>
 
       {!showAll ? (

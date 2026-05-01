@@ -10,9 +10,10 @@ const API_KEY = "d67d8bebd0f4ff345f6505c99e9d0289";
 export default function GenreSearchPage() {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [selectedGenres, setSelectedGenres] = useState<number[]>([]); // ✅ array болгосон
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [resultsCount, setResultsCount] = useState<number>(0); // Нийт олдсон тоо
   const [loadingGenres, setLoadingGenres] = useState<boolean>(true);
   const [loadingMovies, setLoadingMovies] = useState<boolean>(true);
 
@@ -27,7 +28,7 @@ export default function GenreSearchPage() {
 
   useEffect(() => {
     setLoadingMovies(true);
-    const genreParam = selectedGenres.join(","); // ✅ олон genre-г comma-р холбоно
+    const genreParam = selectedGenres.join(",");
     const url =
       selectedGenres.length > 0
         ? `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreParam}&page=${currentPage}`
@@ -38,12 +39,12 @@ export default function GenreSearchPage() {
       .then((res) => {
         setMovies(res.data.results);
         setTotalPages(res.data.total_pages);
+        setResultsCount(res.data.total_results);
       })
       .catch((err) => console.error("Movies fetch error:", err))
       .finally(() => setLoadingMovies(false));
   }, [selectedGenres, currentPage]);
 
-  // ✅ Genre toggle — сонгох/цуцлах
   const toggleGenre = (genreId: number) => {
     setSelectedGenres((prev) =>
       prev.includes(genreId)
@@ -71,7 +72,6 @@ export default function GenreSearchPage() {
             <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-xl sticky top-24">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold">Genres</h2>
-
                 {selectedGenres.length > 0 && (
                   <button
                     onClick={() => setSelectedGenres([])}
@@ -81,59 +81,66 @@ export default function GenreSearchPage() {
                   </button>
                 )}
               </div>
-
               {loadingGenres ? (
                 <div className="animate-pulse text-zinc-500 text-sm">
                   Loading...
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {genres.map((gen) => {
-                    const isSelected = selectedGenres.includes(gen.id);
-                    return (
-                      <button
-                        key={gen.id}
-                        onClick={() => toggleGenre(gen.id)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
-                          isSelected
-                            ? "bg-indigo-600 border-indigo-600 text-white"
-                            : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-indigo-400 dark:hover:border-indigo-500"
-                        }`}
-                      >
-                        {gen.name}
-
-                        {isSelected && <X className="w-3 h-3" />}
-                      </button>
-                    );
-                  })}
+                  {genres.map((gen) => (
+                    <button
+                      key={gen.id}
+                      onClick={() => toggleGenre(gen.id)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                        selectedGenres.includes(gen.id)
+                          ? "bg-indigo-600 border-indigo-600 text-white"
+                          : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-indigo-400 dark:hover:border-indigo-500"
+                      }`}
+                    >
+                      {gen.name}
+                      {selectedGenres.includes(gen.id) && (
+                        <X className="w-3 h-3" />
+                      )}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
           </aside>
 
           <section className="flex-1 space-y-8">
-            {selectedGenres.length > 0 && (
-              <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                  Genres:
-                </span>
-                {selectedGenres.map((id) => {
-                  const genre = genres.find((g) => g.id === id);
-                  return (
-                    <span
-                      key={id}
-                      className="flex items-center gap-1 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 text-xs font-semibold px-3 py-1 rounded-full"
-                    >
-                      {genre?.name}
-                      <X
-                        className="w-3 h-3 cursor-pointer hover:text-white"
-                        onClick={() => toggleGenre(id)}
-                      />
+            <div className="flex justify-between items-end border-b border-zinc-100 dark:border-zinc-800 pb-4">
+              <div className="space-y-4">
+                {selectedGenres.length > 0 && (
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                      Genres:
                     </span>
-                  );
-                })}
+                    {selectedGenres.map((id) => (
+                      <span
+                        key={id}
+                        className="flex items-center gap-1 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 text-xs font-semibold px-3 py-1 rounded-full"
+                      >
+                        {genres.find((g) => g.id === id)?.name}
+                        <X
+                          className="w-3 h-3 cursor-pointer hover:text-white"
+                          onClick={() => toggleGenre(id)}
+                        />
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+
+              {!loadingMovies && (
+                <div className="text-sm font-medium text-zinc-500">
+                  Total results:{" "}
+                  <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+                    {resultsCount.toLocaleString()}
+                  </span>
+                </div>
+              )}
+            </div>
 
             {loadingMovies ? (
               <div className="flex justify-center py-20 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl items-center">
@@ -178,44 +185,40 @@ export default function GenreSearchPage() {
               </div>
             )}
 
-            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 flex justify-center items-center gap-2">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-600 dark:text-zinc-400 disabled:opacity-40 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                Previous
-              </button>
-
-              <div className="flex gap-1">
-                {[...Array(Math.min(5, totalPages))].map((_, index) => (
-                  <button
-                    key={index + 1}
-                    onClick={() => setCurrentPage(index + 1)}
-                    className={`w-10 h-10 rounded-lg font-semibold text-sm transition-colors ${
-                      currentPage === index + 1
-                        ? "bg-indigo-600 text-white"
-                        : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    }`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
-                {totalPages > 5 && (
-                  <span className="text-zinc-400 self-center px-1">...</span>
-                )}
+            {totalPages > 1 && (
+              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 flex justify-center items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-600 dark:text-zinc-400 disabled:opacity-40 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  Previous
+                </button>
+                <div className="flex gap-1">
+                  {[...Array(Math.min(5, totalPages))].map((_, index) => (
+                    <button
+                      key={index + 1}
+                      onClick={() => setCurrentPage(index + 1)}
+                      className={`w-10 h-10 rounded-lg font-semibold text-sm transition-colors ${currentPage === index + 1 ? "bg-indigo-600 text-white" : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                  {totalPages > 5 && (
+                    <span className="text-zinc-400 self-center px-1">...</span>
+                  )}
+                </div>
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-600 dark:text-zinc-400 disabled:opacity-40 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  Next
+                </button>
               </div>
-
-              <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-600 dark:text-zinc-400 disabled:opacity-40 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                Next
-              </button>
-            </div>
+            )}
           </section>
         </div>
       </main>

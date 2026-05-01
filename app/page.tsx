@@ -71,7 +71,7 @@ export default function Home() {
         <HeaderUpcoming />
       </div>
 
-      <div className="z-10 w-full max-w-7xl px-6 -mt-20 flex flex-col gap-16 pt-7#0">
+      <div className="z-10 w-full max-w-7xl px-6 -mt-20 flex flex-col gap-16 pt-80">
         <Upcomingcomps
           skip={upcomingSkip}
           setSkip={setUpcomingSkip}
@@ -90,8 +90,6 @@ export default function Home() {
           total={upcomingTotal}
           setTotal={setUpcomingTotal}
         />
-
-        {/* Pagination Section */}
 
         <div className="mt-14 flex items-center justify-center gap-2 md:gap-4 pb-20 select-none">
           <button

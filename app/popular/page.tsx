@@ -1,87 +1,74 @@
 "use client";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import React from "react";
-import { Movies } from "../types";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-
-type Props = {
-  skip: number;
-  setSkip: Dispatch<SetStateAction<number>>;
-  setTotal: Dispatch<SetStateAction<number>>;
-  total: number;
-};
+import { Movies } from "../types";
 
 const API_KEY = "d67d8bebd0f4ff345f6505c99e9d0289";
-const MOVIES_PER_PAGE = 20;
 
-export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
+export default function Popular() {
   const [movies, setMovies] = useState<Movies[]>([]);
-  const [showAll, setShowAll] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    const page = Math.floor(skip / MOVIES_PER_PAGE) + 1;
     axios
       .get(
-        `https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&page=${page}`,
+        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${currentPage}`,
       )
       .then((res) => {
         setMovies(res.data.results);
-        setTotal(Math.min(res.data.total_pages, 500));
+        // TMDB API ихэвчлэн 500 хүртэлх хуудсыг зөвшөөрдөг
+        setTotalPages(Math.min(res.data.total_pages, 500));
       })
-      .catch((err) => console.error("Upcoming API error:", err));
-  }, [skip, setTotal]);
+      .catch((err) => console.error("Popular API error:", err));
+  }, [currentPage]);
 
   if (!mounted) return null;
 
-  const currentPage = Math.floor(skip / MOVIES_PER_PAGE) + 1;
-
-  const handleBack = () => {
-    setSkip(0);
-    setShowAll(false);
-  };
-
+  // Голын хуудаснуудыг тодорхойлох
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
     let start = Math.max(1, currentPage - 2);
-    let end = Math.min(total, start + maxVisible - 1);
-    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
-    for (let i = start; i <= end; i++) pages.push(i);
+    let end = Math.min(totalPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
     return pages;
   };
 
   const goToPage = (p: number) => {
-    setSkip((p - 1) * MOVIES_PER_PAGE);
+    setCurrentPage(p);
     window.scrollTo({ top: 800, behavior: "smooth" });
   };
 
   return (
-    <div
-      className="relative w-full max-w-10xl mx-auto px-4 md:px-10 pt-10 transition-colors duration-300"
-      onClick={() => showAll && handleBack()}
-    >
+    <div className="w-full max-w-7xl mx-auto px-4 md:px-10 transition-colors duration-300">
       <div className="flex justify-between items-center py-8">
         <h2 className="text-zinc-900 dark:text-zinc-50 text-2xl font-black uppercase tracking-widest">
-          Upcoming
+          Popular
         </h2>
-
-        <Link
-          href={"/upcoming"}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (showAll) handleBack();
-            else setShowAll(true);
+        <button
+          onClick={() => {
+            setShowAll(!showAll);
+            if (showAll) setCurrentPage(1);
           }}
-          className="z-10 text-indigo-600 dark:text-indigo-400 font-bold transition-all uppercase text-sm tracking-widest"
+          className="z-10 text-indigo-600 dark:text-indigo-400 hover:opacity-80 font-bold transition-all uppercase text-sm tracking-widest"
         >
           {showAll ? "❮ Back" : "See more ❯"}
-        </Link>
+        </button>
       </div>
 
       {!showAll ? (
@@ -92,7 +79,7 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
               href={`/movie/${movie.id}`}
               className="w-40 sm:w-45 md:w-50 group snap-start flex flex-col space-y-2"
             >
-              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
+              <div className="relative aspect-[2/3] overflow-hidden rounded-2xl shadow-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   alt={movie.title}
@@ -103,7 +90,6 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
                 <h3 className="text-zinc-900 dark:text-zinc-50 font-bold text-xs line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {movie.title}
                 </h3>
-
                 <p className="text-yellow-500 font-bold text-[10px]">
                   ★ {movie.vote_average?.toFixed(1)}
                 </p>
@@ -112,18 +98,14 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
           ))}
         </div>
       ) : (
-        <div
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10 animate-in fade-in duration-500"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {movies.map((movie) => (
             <Link
               key={movie.id}
               href={`/movie/${movie.id}`}
-              onClick={(e) => e.stopPropagation()}
               className="group flex flex-col space-y-3"
             >
-              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
+              <div className="relative aspect-[2/3] overflow-hidden rounded-2xl shadow-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -149,41 +131,69 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
       )}
 
       {showAll && (
-        <div
-          className="mt-14 flex items-center justify-center gap-2 md:gap-4 pb-20 select-none"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="mt-14 flex items-center justify-center gap-2 md:gap-4 pb-20 select-none">
+          {/* Previous Button */}
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-2 font-bold text-zinc-900 dark:text-zinc-50 hover:text-indigo-600 disabled:opacity-20 transition-all"
+            className="px-3 py-2 text-sm font-bold text-zinc-900 dark:text-zinc-50 hover:text-indigo-600 disabled:opacity-20 transition-all"
           >
-            ‹ Prev
+            ❮ Prev
           </button>
-          <div className="flex gap-2">
+
+          <div className="flex items-center gap-2">
+            {/* Эхний хуудас болон цэгүүд */}
+            {currentPage > 3 && (
+              <>
+                <button
+                  onClick={() => goToPage(1)}
+                  className="h-10 w-10 rounded-xl text-sm font-bold border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-indigo-500 transition-all"
+                >
+                  1
+                </button>
+                <span className="text-zinc-400 px-1 font-bold">...</span>
+              </>
+            )}
+
+            {/* Одоогийн байгаа хуудсууд */}
             {getPageNumbers().map((p) => (
               <button
                 key={p}
                 onClick={() => goToPage(p)}
-                className={`h-10 w-10 rounded-xl font-bold transition-all ${
+                className={`h-10 w-10 rounded-xl text-sm font-bold transition-all border ${
                   currentPage === p
-                    ? "bg-indigo-600 text-white shadow-lg"
-                    : "text-zinc-500 border border-zinc-200 dark:border-zinc-700 hover:border-indigo-500 hover:text-indigo-500"
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-lg"
+                    : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-indigo-500 hover:text-indigo-500"
                 }`}
               >
                 {p}
               </button>
             ))}
+
+            {/* Төгсгөлийн цэгүүд болон сүүлийн хуудас */}
+            {currentPage < totalPages - 2 && (
+              <>
+                <span className="text-zinc-400 px-1 font-bold">...</span>
+                <button
+                  onClick={() => goToPage(totalPages)}
+                  className="h-10 w-10 rounded-xl text-sm font-bold border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-indigo-500 transition-all"
+                >
+                  {totalPages}
+                </button>
+              </>
+            )}
           </div>
+
+          {/* Next Button */}
           <button
             onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage === total}
-            className="px-3 py-2 font-bold text-zinc-900 dark:text-zinc-50 hover:text-indigo-600 disabled:opacity-20 transition-all"
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 text-sm font-bold text-zinc-900 dark:text-zinc-50 hover:text-indigo-600 disabled:opacity-20 transition-all"
           >
-            Next ›
+            Next ❯
           </button>
         </div>
       )}
     </div>
   );
-};
+}

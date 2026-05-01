@@ -16,7 +16,7 @@ export const HeaderUpcoming = () => {
   useEffect(() => {
     axios
       .get(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}`)
-      .then((res) => setMovies(res.data.results.slice(0, 5)))
+      .then((res) => setMovies(res.data.results.slice(0, 10)))
       .catch((err) => console.error("Movies fetch error:", err));
   }, []);
 

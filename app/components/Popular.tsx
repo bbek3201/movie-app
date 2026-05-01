@@ -29,9 +29,7 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
   useEffect(() => {
     const page = Math.floor(skip / MOVIES_PER_PAGE) + 1;
     axios
-      .get(
-        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${page}`,
-      )
+      .get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`)
       .then((res) => {
         setMovies(res.data.results);
         setTotal(Math.min(res.data.total_pages, 500));
@@ -72,7 +70,8 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
         <h2 className="text-zinc-900 dark:text-zinc-50 text-2xl font-black uppercase tracking-widest">
           Popular
         </h2>
-        <button
+        <Link
+          href={"/popular"}
           onClick={(e) => {
             e.stopPropagation();
             if (showAll) handleBack();
@@ -81,7 +80,7 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
           className="z-10 text-indigo-600 dark:text-indigo-400 hover:opacity-80 font-bold transition-all uppercase text-sm tracking-widest"
         >
           {showAll ? "❮ Back" : "See more ❯"}
-        </button>
+        </Link>
       </div>
 
       {!showAll ? (
