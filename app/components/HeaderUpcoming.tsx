@@ -41,7 +41,7 @@ export const HeaderUpcoming = () => {
     }
   }, [currentIndex, movies]);
 
-  // ✅ Escape товчоор хаах
+ 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setPlayer(false);
@@ -50,7 +50,6 @@ export const HeaderUpcoming = () => {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [player]);
 
-  // ✅ Trailer нээлттэй үед scroll блоклох
   useEffect(() => {
     if (player) {
       document.body.style.overflow = "hidden";
@@ -120,10 +119,10 @@ export const HeaderUpcoming = () => {
         </div>
       </div>
 
-      {/* ✅ z-[999] болгосон, scroll блоклосон */}
+   
       {player && trailerKey && (
         <div
-          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 dark:bg-black/95 p-4 md:p-10 backdrop-blur-sm"
+          className="fixed inset-0 z-999 flex items-center justify-center bg-black/90 dark:bg-black/95 p-4 md:p-10 backdrop-blur-sm"
           onClick={() => setPlayer(false)}
         >
           <div

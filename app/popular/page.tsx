@@ -24,7 +24,7 @@ export default function Popular() {
       )
       .then((res) => {
         setMovies(res.data.results);
-        // TMDB API ихэвчлэн 500 хүртэлх хуудсыг зөвшөөрдөг
+   
         setTotalPages(Math.min(res.data.total_pages, 500));
       })
       .catch((err) => console.error("Popular API error:", err));
@@ -32,7 +32,7 @@ export default function Popular() {
 
   if (!mounted) return null;
 
-  // Голын хуудаснуудыг тодорхойлох
+
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
@@ -79,7 +79,7 @@ export default function Popular() {
               href={`/movie/${movie.id}`}
               className="w-40 sm:w-45 md:w-50 group snap-start flex flex-col space-y-2"
             >
-              <div className="relative aspect-[2/3] overflow-hidden rounded-2xl shadow-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
+              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   alt={movie.title}
@@ -105,7 +105,7 @@ export default function Popular() {
               href={`/movie/${movie.id}`}
               className="group flex flex-col space-y-3"
             >
-              <div className="relative aspect-[2/3] overflow-hidden rounded-2xl shadow-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50">
+              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -132,7 +132,7 @@ export default function Popular() {
 
       {showAll && (
         <div className="mt-14 flex items-center justify-center gap-2 md:gap-4 pb-20 select-none">
-          {/* Previous Button */}
+   
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage === 1}
@@ -142,7 +142,7 @@ export default function Popular() {
           </button>
 
           <div className="flex items-center gap-2">
-            {/* Эхний хуудас болон цэгүүд */}
+      
             {currentPage > 3 && (
               <>
                 <button
@@ -155,7 +155,7 @@ export default function Popular() {
               </>
             )}
 
-            {/* Одоогийн байгаа хуудсууд */}
+    
             {getPageNumbers().map((p) => (
               <button
                 key={p}
@@ -170,7 +170,7 @@ export default function Popular() {
               </button>
             ))}
 
-            {/* Төгсгөлийн цэгүүд болон сүүлийн хуудас */}
+
             {currentPage < totalPages - 2 && (
               <>
                 <span className="text-zinc-400 px-1 font-bold">...</span>
@@ -184,7 +184,7 @@ export default function Popular() {
             )}
           </div>
 
-          {/* Next Button */}
+    
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={currentPage === totalPages}

@@ -29,7 +29,9 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
   useEffect(() => {
     const page = Math.floor(skip / MOVIES_PER_PAGE) + 1;
     axios
-      .get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`)
+      .get(
+        `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${page}`,
+      )
       .then((res) => {
         setMovies(res.data.results);
         setTotal(Math.min(res.data.total_pages, 500));
@@ -84,8 +86,8 @@ export const Popular = ({ skip, setSkip, setTotal, total }: Props) => {
       </div>
 
       {!showAll ? (
-        <div className="grid grid-rows-2 grid-flow-col gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
-          {movies.map((movie) => (
+        <div className="grid grid-rows-2 grid-flow-col gap-6 pb-6">
+          {movies.slice(0, 10).map((movie) => (
             <Link
               key={movie.id}
               href={`/movie/${movie.id}`}

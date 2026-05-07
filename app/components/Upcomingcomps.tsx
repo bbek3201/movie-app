@@ -85,8 +85,8 @@ export const Upcomingcomps = ({ skip, setSkip, setTotal, total }: Props) => {
       </div>
 
       {!showAll ? (
-        <div className="grid grid-rows-2 grid-flow-col gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory">
-          {movies.map((movie) => (
+        <div className="grid grid-rows-2 grid-flow-col gap-6 pb-6">
+          {movies.slice(0, 10).map((movie) => (
             <Link
               key={movie.id}
               href={`/movie/${movie.id}`}

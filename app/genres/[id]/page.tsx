@@ -156,7 +156,7 @@ export default function GenreSearchPage() {
                     href={`/movie/${movie.id}`}
                     className="group bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-md hover:border-indigo-500 transition-all duration-300"
                   >
-                    <div className="aspect-[2/3] relative overflow-hidden">
+                    <div className="aspect-2/3 relative overflow-hidden">
                       {movie.poster_path ? (
                         <img
                           src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}

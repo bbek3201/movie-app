@@ -77,7 +77,7 @@ export default function TopRated() {
               href={`/movie/${movie.id}`}
               className="w-40 sm:w-45 md:w-50 group snap-start flex flex-col space-y-2"
             >
-              <div className="relative aspect-[2/3] overflow-hidden rounded-2xl shadow-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
+              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   alt={movie.title}
@@ -103,7 +103,7 @@ export default function TopRated() {
               href={`/movie/${movie.id}`}
               className="group flex flex-col space-y-3"
             >
-              <div className="relative aspect-[2/3] overflow-hidden rounded-2xl shadow-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50">
+              <div className="relative aspect-2/3 overflow-hidden rounded-2xl shadow-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50">
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -130,7 +130,7 @@ export default function TopRated() {
 
       {showAll && (
         <div className="mt-14 flex items-center justify-center gap-2 md:gap-4 pb-20 select-none">
-          {/* Previous Button */}
+      
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage === 1}
@@ -140,7 +140,7 @@ export default function TopRated() {
           </button>
 
           <div className="flex items-center gap-2">
-            {/* Эхний хуудас болон цэгүүд */}
+  
             {currentPage > 3 && (
               <>
                 <button
@@ -153,7 +153,7 @@ export default function TopRated() {
               </>
             )}
 
-            {/* Одоогийн байгаа хуудсууд */}
+           
             {getPageNumbers().map((p) => (
               <button
                 key={p}
@@ -168,7 +168,6 @@ export default function TopRated() {
               </button>
             ))}
 
-            {/* Сүүлийн хуудас болон цэгүүд */}
             {currentPage < totalPages - 2 && (
               <>
                 <span className="text-zinc-400 px-1">...</span>
@@ -182,7 +181,7 @@ export default function TopRated() {
             )}
           </div>
 
-          {/* Next Button */}
+   
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={currentPage === totalPages}
